@@ -57,9 +57,8 @@ describe('Basic user flow for Website', () => {
 
   // Check to make sure that when you click "Add to Cart" on the first <product-item> that
   // the button swaps to "Remove from Cart"
-  it.skip('Clicking the "Add to Cart" button should change button text', async () => {
+  it('Clicking the "Add to Cart" button should change button text', async () => {
     console.log('Checking the "Add to Cart" button...');
-
     /**
      **** TODO - STEP 2 **** 
      * Query a <product-item> element using puppeteer ( checkout page.$() and page.$$() in the docs )
@@ -69,11 +68,19 @@ describe('Basic user flow for Website', () => {
      * Remember to remove the .skip from this it once you are finished writing this test.
      */
 
-  }, 2500);
+    const productItem = await page.$('product-item');
+    
+    const button = await productItem.evaluateHandle(el => el.shadowRoot.querySelector('button'));
+    await button.click();
+
+    const buttonText = await button.evaluate(el => el.innerText);
+    expect(buttonText).toBe('Remove from Cart');
+
+  }, 10000);
 
   // Check to make sure that after clicking "Add to Cart" on every <product-item> that the Cart
   // number in the top right has been correctly updated
-  it.skip('Checking number of items in cart on screen', async () => {
+  it('Checking number of items in cart on screen', async () => {
     console.log('Checking number of items in cart on screen...');
 
     /**
@@ -84,7 +91,19 @@ describe('Basic user flow for Website', () => {
      * Remember to remove the .skip from this it once you are finished writing this test.
      */
 
-  }, 10000);
+    const prodItems = await page.$$('product-item');
+    for (let i = 0; i < prodItems.length; i++) {
+      const button = await prodItems[i].evaluateHandle(el => el.shadowRoot.querySelector('button'));
+      const buttonText = await button.evaluate(el => el.innerText);
+      if (buttonText === 'Add to Cart') {
+        await button.click();
+      }
+    }
+
+    const cartCount = await page.$eval('#cart-count', el => el.innerText);
+    expect(cartCount).toBe('20');
+
+  }, 20000);
 
   // Check to make sure that after you reload the page it remembers all of the items in your cart
   it.skip('Checking number of items in cart on screen after reload', async () => {
